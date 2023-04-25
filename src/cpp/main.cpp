@@ -1,6 +1,10 @@
+#include "DataReader.h"
 #include "graph.h"
+#include <iostream>
+#include <string>
 
-int main()
+int main(int argc, char *argv)
 {
-    return 0;
+    DataReader data("../data/data_sorted.pldat");
+    printf("Entry Count: %u\n", data.RemainingEntries());
 }

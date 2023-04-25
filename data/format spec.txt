@@ -1,0 +1,19 @@
+Each row in the input file gets converted to an entry in the output file.
+
+The structure of the output file is one 32 bit unsigned int containing the number of entries in the 
+file fillowed y the entries.
+
+Each entry is as follows:
+14 total bytes:
+each field is an unsigned int of the specified length
+4 bytes: time (ns since the first entry)
+4 bytes: user num
+1 byte: red
+1 byte: green
+1 byte: blue
+3 bytes: x,y coords (packing format below)
+
+coordinate packing:
+24 bit (3 byte), number with bits 0-10 representing the y coordinate, 
+and bits 11-21 representing x
+See converter.cpp for the code that does the conversion

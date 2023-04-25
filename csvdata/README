@@ -1,0 +1,6 @@
+This holds the csv data files to be converted by the converter program.
+The full set of files can be found at:
+https://placedata.reddit.com/data/canvas-history/index.html
+The files must be unzipped before being converted.
+
+Then compile and run converter.exe in the DataConveter folder in this repository.
