@@ -1,5 +1,18 @@
 #include "FibonacciHeap.h"
 
+#ifdef FIBHEAP_DEBUG
+#define VERIFY_REACHABILITY(loc)                                                      \
+    temp = CountTraversal(min);                                                       \
+    printf("Total Nodes Reachable " #loc ", totalNodes: %d, %d\n", temp, totalNodes); \
+    if ( temp != totalNodes )                                                         \
+    {                                                                                 \
+        abort();                                                                      \
+    }
+#else
+#define VERIFY_REACHABILITY(loc)
+#endif
+
+static int temp = 0;
 FibonacciHeap::FibonacciHeap(key_t maxKey)
 {
     min = nullptr;
@@ -78,12 +91,37 @@ FibonacciHeap::Node *FibonacciHeap::MergeTrees(Node *root1, Node *root2)
     */
 
     // save the previous node in liked list
-    Node *root2Last = root2->prev;
 
+#ifdef FIBHEAP_DEBUG
+    if ( root1 == nullptr )
+    {
+        printf("root 1 nullptr\n");
+    }
+    if ( root2 == nullptr )
+    {
+        printf("root 2 nullptr\n");
+    }
+#endif
+#ifdef FIBHEAP_DEBUG
+    printf("Saving list 2 end\n");
+#endif
+    Node *root2Last = root2->prev;
+#ifdef FIBHEAP_DEBUG
+    printf("connecting end of 1 to start of 2\n");
+#endif
     root1->prev->next = root2;
+#ifdef FIBHEAP_DEBUG
+    printf("connecting start of 2 to end of 1\n");
+#endif
     root2->prev = root1->prev;
 
+#ifdef FIBHEAP_DEBUG
+    printf("Connecting start of 1 to end of 2\n");
+#endif
     root1->prev = root2Last;
+#ifdef FIBHEAP_DEBUG
+    printf("Connecting end of 2 to start of 1");
+#endif
     root2Last->next = root1;
 
     return (root1->priority <= root2->priority ? root1 : root2);
@@ -96,15 +134,24 @@ key_t FibonacciHeap::PeekMin()
 
 key_t FibonacciHeap::ExtractMin()
 {
+    VERIFY_REACHABILITY(extract min start)
+#ifdef FIBHEAP_DEBUG
+    int realMinDegree = 0;
+#endif
     key_t retVal = min->key;
     Node *minFirstChild = min->children;
     Node *currChild = minFirstChild;
     Node *minMinChild = minFirstChild;
-
+#ifdef FIBHEAP_DEBUG
+    printf("Min's degree: %d\n", min->degree);
+#endif
     if ( !(min->children == nullptr) )
     {
         do
         {
+#ifdef FIBHEAP_DEBUG
+            realMinDegree++;
+#endif
             // the child is now a root
             currChild->parent = nullptr;
             if ( currChild->priority < minMinChild->priority )
@@ -114,7 +161,9 @@ key_t FibonacciHeap::ExtractMin()
             currChild = currChild->next;
         } while ( currChild != minFirstChild );
     }
-
+#ifdef FIBHEAP_DEBUG
+    printf("min's real degree: %d\n", realMinDegree);
+#endif
     Node *tempMin = RemoveNode(min);
     totalNodes--;
     keyNodeMap[min->key] = nullptr;
@@ -122,12 +171,27 @@ key_t FibonacciHeap::ExtractMin()
     delete min;
     min = tempMin;
 #ifdef FIBHEAP_DEBUG
+    printf("Starting merge trees\n");
+#endif
+    if ( min == nullptr )
+    {
+        min = minMinChild;
+    }
+    else if ( minMinChild == nullptr )
+    {
+    }
+    else
+    {
+        min = MergeTrees(min, minMinChild);
+    }
+#ifdef FIBHEAP_DEBUG
     printf("min: %p\n", min);
 #endif
     MeldRootList();
 #ifdef FIBHEAP_DEBUG
     // printf("finished melding\n");
 #endif
+    VERIFY_REACHABILITY(extract min end)
     return retVal;
 }
 
@@ -164,6 +228,7 @@ FibonacciHeap::Node *FibonacciHeap::RemoveNode(Node *root)
 
 void FibonacciHeap::MeldRootList()
 {
+    VERIFY_REACHABILITY(meld start)
 #ifdef FIBHEAP_DEBUG_VERIFY_CIRCULARITY
     printf("verifying circularity\n");
     bool verify = VerifyCircularity(min);
@@ -172,18 +237,16 @@ void FibonacciHeap::MeldRootList()
     std::vector<Node *> newRoots;
     int newRootsSize = newRoots.size(); // cache size of vector to avoid 2 size calls for every iteration
 
-    Node *remainingNodes = min;
-
     Node *currNode;
 
     int degree;
     // printf("starting loop, initial remaining nodes: %p\n", remainingNodes);
-    while ( remainingNodes )
+    while ( min )
     {
-        currNode = remainingNodes;
+        currNode = min;
         // printf("looping with %p\n", currNode);
 
-        remainingNodes = RemoveNode(currNode);
+        min = RemoveNode(currNode);
 
         degree = currNode->degree;
         // printf("Node removed, remaining nodes %p, degree %d\n", remainingNodes, degree);
@@ -224,6 +287,12 @@ void FibonacciHeap::MeldRootList()
             // the degree is already occupied, so merge the 2 nodes
             // printf("degree: %d, old degrees %d, %d\n", degree, currNode->degree, newRoots[degree]->degree);
             currNode = JoinTrees(currNode, newRoots[degree]);
+            if ( currNode == nullptr )
+            {
+                printf("JoinTrees returned nullptr");
+                abort();
+                return;
+            }
             // printf("joined the trees\n");
 
             newRoots[degree] = nullptr;
@@ -239,7 +308,12 @@ void FibonacciHeap::MeldRootList()
         // printf("updated newRoots\n");
     }
 
-    min = nullptr;
+    // min = nullptr;
+    if ( min != nullptr )
+    {
+        printf("Min != nullptr");
+        abort();
+    }
     for ( size_t i = 0; i < newRoots.size(); i++ )
     {
         if ( newRoots[i] != nullptr )
@@ -256,11 +330,24 @@ void FibonacciHeap::MeldRootList()
             }
         }
     }
+    VERIFY_REACHABILITY(meld end)
 }
 
 FibonacciHeap::Node *FibonacciHeap::JoinTrees(Node *root1, Node *root2)
 {
     // the code assumes root 1 is the min, so swap if its not
+    if ( root1->next != root1 )
+    {
+        printf("root1 is not alone in its list");
+    }
+    if ( root2->next != root2 )
+    {
+        printf("root2 is not alone in its list");
+    }
+    if ( (root1->next != root1) || (root1->next != root1) )
+    {
+        return nullptr;
+    }
     Node *temp;
     if ( root2->priority < root1->priority )
     {
@@ -328,8 +415,9 @@ void FibonacciHeap::PrintTree(Node *root, int padding)
 
 bool FibonacciHeap::DecreaseKey(key_t key, uint32_t newPriority)
 {
+    VERIFY_REACHABILITY(decrease key start)
 #ifdef FIBHEAP_DEBUG
-    printf("decreasing %d\n", key);
+    // printf("decreasing %d\n", key);
 #endif
     Node *keyNode = keyNodeMap[key];
     if ( keyNode == nullptr )
@@ -338,6 +426,7 @@ bool FibonacciHeap::DecreaseKey(key_t key, uint32_t newPriority)
         printf("decreasing new key, inserting\n");
 #endif
         Insert(key, newPriority);
+        VERIFY_REACHABILITY(decrease key new key)
         return true;
     }
 
@@ -346,6 +435,7 @@ bool FibonacciHeap::DecreaseKey(key_t key, uint32_t newPriority)
 #ifdef FIBHEAP_DEBUG
         printf("already lower, not decreasing\n");
 #endif
+        VERIFY_REACHABILITY(decrease key no change)
         return false;
     }
 
@@ -354,9 +444,22 @@ bool FibonacciHeap::DecreaseKey(key_t key, uint32_t newPriority)
     // keyNode is a root node, no cutting or marking needed, just check if its the new min
     if ( keyNode->parent == nullptr )
     {
+        VERIFY_REACHABILITY(decrease key root)
 #ifdef FIBHEAP_DEBUG
         printf("Decreasing a root node, checking if its new min\n");
 #endif
+#ifdef FIBHEAP_DEBUG
+        if ( min == nullptr )
+        {
+            printf("We've got orphaned nodes\n");
+        }
+        printf("total nodes: %d\n", totalNodes);
+        printf("keyNode priority:");
+        printf("%u   ", keyNode->priority);
+        printf("min priority:");
+        printf("%u\n", min->priority);
+#endif
+
         if ( keyNode->priority < min->priority )
         {
 #ifdef FIBHEAP_DEBUG
@@ -364,6 +467,10 @@ bool FibonacciHeap::DecreaseKey(key_t key, uint32_t newPriority)
 #endif
             min = keyNode;
         }
+#ifdef FIBHEAP_DEBUG
+        printf("    finished checking for new nodes\n");
+#endif
+        VERIFY_REACHABILITY(decrease key root end)
         return true;
     }
 
@@ -373,9 +480,11 @@ bool FibonacciHeap::DecreaseKey(key_t key, uint32_t newPriority)
 #ifdef FIBHEAP_DEBUG
         printf("Decreasing didn't violate heap property\n");
 #endif
+        VERIFY_REACHABILITY(decrease key heap ok)
         return true;
     }
 
+    VERIFY_REACHABILITY(decrease key before cut)
 #ifdef FIBHEAP_DEBUG
     printf("cutting\n");
 #endif
@@ -383,17 +492,12 @@ bool FibonacciHeap::DecreaseKey(key_t key, uint32_t newPriority)
 #ifdef FIBHEAP_DEBUG
     printf("finished cutting\n");
 #endif
+    VERIFY_REACHABILITY(decrease key after cut)
     return true;
 }
 
 void FibonacciHeap::Cut(Node *cutNode)
 {
-    static bool firstcut = true;
-    if ( firstcut )
-    {
-        printf("FIRST CUT\n");
-        firstcut = false;
-    }
     // this will never be the first val, only seen on
     // recursive calls, so no need to check for new minimum
     if ( cutNode->parent == nullptr )
@@ -454,3 +558,36 @@ bool FibonacciHeap::VerifyCircularity(Node *root)
 }
 
 #endif
+
+bool FibonacciHeap::InTraversal(Node *root, key_t key)
+{
+    Node *next = root;
+    do
+    {
+        /* code */
+    } while ( root != next );
+
+    return false;
+}
+int FibonacciHeap::CountTraversal(Node *root)
+{
+    if ( root == nullptr )
+    {
+        return 0;
+    }
+    int sum = 0;
+    Node *next = root;
+    do
+    {
+        sum++;
+        sum += CountTraversal(next->children);
+        next = next->next;
+    } while ( root != next );
+    return sum;
+}
+
+int FibonacciHeap::CountVector()
+{
+    int c = 0;
+    return 0;
+}

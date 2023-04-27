@@ -2,12 +2,13 @@
 #include <cstdint>
 #include <vector>
 
-//#define FIBHEAP_DEBUG_VERIFY_CIRCULARITY
-// #define FIBHEAP_CRASH_DEBUG
-#define FIBHEAP_DEBUG
-#ifdef FIBHEAP_DEBUG
 #include <iomanip>
 #include <iostream>
+
+//#define FIBHEAP_DEBUG_VERIFY_CIRCULARITY
+// #define FIBHEAP_CRASH_DEBUG
+// #define FIBHEAP_DEBUG
+#ifdef FIBHEAP_DEBUG
 #endif
 
 typedef int key_t;
@@ -85,4 +86,8 @@ private:
 #ifdef FIBHEAP_DEBUG_VERIFY_CIRCULARITY
     static bool VerifyCircularity(Node *root);
 #endif
+
+    static bool InTraversal(Node *root, key_t key);
+    static int CountTraversal(Node *root);
+    int CountVector();
 };

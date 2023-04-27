@@ -23,7 +23,7 @@ class Graph
 {
 public:
     Graph(std::string file, int xMin, int yMin, int xMax, int yMax);
-    Graph(std::string file) : Graph(file, 0, 0, 1999, 1999){};
+    Graph(std::string file) : Graph(file, 0, 0, 399, 399){};
     ~Graph();
 
     int NumNodes() const;

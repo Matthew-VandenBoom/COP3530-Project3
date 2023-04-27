@@ -2,7 +2,7 @@
 
 // #define DIJKSTRA_DEBUG_FULL
 
-#define DIJKSTRA_DEBUG
+// #define DIJKSTRA_DEBUG
 #ifdef DIJKSTRA_DEBUG
 #include <iostream>
 #endif
