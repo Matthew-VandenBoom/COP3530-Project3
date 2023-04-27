@@ -1,7 +1,7 @@
 #include "TextureManager.h"
 
 // "redeclare" the variable, so this file knows it exists and can use it
-unordered_map<string, Texture> TextureManager::textures;
+unordered_map<string, sf::Texture> TextureManager::textures;
 
 void TextureManager::LoadTexture(string textureName)
 {
@@ -11,7 +11,7 @@ void TextureManager::LoadTexture(string textureName)
     textures[textureName].loadFromFile(path);
 }
 
-Texture &TextureManager::GetTexture(string textureName)
+sf::Texture &TextureManager::GetTexture(string textureName)
 {
     // if the texture doesn't exist...
     // load it first, then return it?

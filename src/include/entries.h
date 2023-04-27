@@ -40,14 +40,15 @@ void printPackedEntry(PackedEntry *entry);
 
 struct Entry
 {
-    uint32_t time, user;
+    uint32_t time;
+    int user;
     uint8_t r, g, b;
     uint16_t x, y;
 
     Entry(PackedEntry *e)
     {
         this->time = e->time;
-        this->user = e->user;
+        this->user = (int)(e->user);
         this->r = e->r;
         this->g = e->g;
         this->b = e->b;
@@ -56,4 +57,8 @@ struct Entry
     Entry(uint32_t time, uint32_t user, uint8_t r, uint8_t g, uint8_t b, uint16_t x, uint16_t y) : time(time), user(user), r(r), g(g), b(b), x(x), y(y) {}
     Entry() : Entry(0, 0, 0, 0, 0, 0, 0) {}
     void Print() { printf("Time: %u\nUser: %u\nColor: #%x%x%x\n(%d, %d)\n", time, user, r, g, b, x, y); }
+    // clang-format off
+    bool operator==(const Entry&) const;
+    bool operator!=(const Entry& other) const {return !(this->operator==(other));}
+    // clang-format on
 };

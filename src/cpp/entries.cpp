@@ -81,3 +81,36 @@ void printPackedEntry(PackedEntry *entry)
     }
 }
 */
+
+bool Entry::operator==(const Entry &other) const
+{
+    if ( this->time != other.time )
+    {
+        return false;
+    }
+    if ( this->user != other.user )
+    {
+        return false;
+    }
+    if ( this->r != other.r )
+    {
+        return false;
+    }
+    if ( this->g != other.g )
+    {
+        return false;
+    }
+    if ( this->b != other.b )
+    {
+        return false;
+    }
+    if ( this->x != other.x )
+    {
+        return false;
+    }
+    if ( this->y != other.y )
+    {
+        return false;
+    }
+    return true;
+}

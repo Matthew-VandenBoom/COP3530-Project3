@@ -5,8 +5,8 @@
 struct DijkstraRet
 {
     int startNode;
-    vector<uint32_t> dist;
-    vector<int> prev;
+    std::vector<uint32_t> dist;
+    std::vector<int> prev;
 };
 template <typename HeapType>
 DijkstraRet *Dijkstra(const Graph &graph, int startNode);

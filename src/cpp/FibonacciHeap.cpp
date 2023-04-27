@@ -118,10 +118,16 @@ key_t FibonacciHeap::ExtractMin()
     Node *tempMin = RemoveNode(min);
     totalNodes--;
     keyNodeMap[min->key] = nullptr;
+    min->children = nullptr;
     delete min;
     min = tempMin;
-
+#ifdef FIBHEAP_DEBUG
+    printf("min: %p\n", min);
+#endif
     MeldRootList();
+#ifdef FIBHEAP_DEBUG
+    // printf("finished melding\n");
+#endif
     return retVal;
 }
 
@@ -158,6 +164,11 @@ FibonacciHeap::Node *FibonacciHeap::RemoveNode(Node *root)
 
 void FibonacciHeap::MeldRootList()
 {
+#ifdef FIBHEAP_DEBUG_VERIFY_CIRCULARITY
+    printf("verifying circularity\n");
+    bool verify = VerifyCircularity(min);
+    printf("Circularity: %d\n", verify);
+#endif
     std::vector<Node *> newRoots;
     int newRootsSize = newRoots.size(); // cache size of vector to avoid 2 size calls for every iteration
 
@@ -166,43 +177,66 @@ void FibonacciHeap::MeldRootList()
     Node *currNode;
 
     int degree;
+    // printf("starting loop, initial remaining nodes: %p\n", remainingNodes);
     while ( remainingNodes )
     {
         currNode = remainingNodes;
+        // printf("looping with %p\n", currNode);
 
         remainingNodes = RemoveNode(currNode);
 
         degree = currNode->degree;
-
-        // make sure there is space in the newRoots vector for this loop
-        // newRoots must be at least degree
-        if ( newRootsSize < degree )
+        // printf("Node removed, remaining nodes %p, degree %d\n", remainingNodes, degree);
+        //  make sure there is space in the newRoots vector for this loop
+        //  newRoots must be at least degree
+        // printf("verifying size 1: %d, %d\n", newRootsSize, (int)newRoots.size());
+        if ( newRootsSize < (degree + 1) )
         {
-            newRoots.resize(degree, nullptr);
-            newRootsSize = degree;
+            // printf("resizing 1\n");
+            newRoots.resize(degree + 1, nullptr);
+            newRootsSize = degree + 1;
         }
+        // printf("size 1 verified %d\n", newRootsSize);
 
         // if the last element isnt nullptr, it would be possible
         // for the last elemnt to me merged to the next degree, which
         // wouldn't have a space in the vector
+        // printf("verifying size 2\n");
         if ( newRootsSize == 0 || newRoots[newRootsSize - 1] != nullptr )
         {
+            // printf("resizing 2: %d\n", newRootsSize);
             newRoots.resize(newRootsSize + 1, nullptr);
             newRootsSize++;
         }
+        // printf("size 2 verified:  %d, %d\n", newRootsSize, (int)newRoots.size());
 
+        // printf("starting merging loop\n");
+        //  if ( degree >= newRootsSize )
+        //  {
+        //      printf("DEGREE %d IS TOO LARGE FOR VECTOR %d, %d\n", degree, (int)newRoots.size(), newRootsSize);
+        //  }
         while ( newRoots[degree] != nullptr )
         {
+            // if ( degree >= newRootsSize )
+            // {
+            //     printf("DEGREE %d IS TOO LARGE FOR VECTOR %d, %d\n", degree, (int)newRoots.size(), newRootsSize);
+            // }
             // the degree is already occupied, so merge the 2 nodes
+            // printf("degree: %d, old degrees %d, %d\n", degree, currNode->degree, newRoots[degree]->degree);
             currNode = JoinTrees(currNode, newRoots[degree]);
+            // printf("joined the trees\n");
 
             newRoots[degree] = nullptr;
             degree++;
+            // printf("starting next iteration: degree = %d\n", degree);
         }
+        // printf("ended merging loop\n");
 
         // newRoot has the root of a new node and its degree is free
 
+        // printf("degree == currNode.degree: %d\n", (degree == currNode->degree));
         newRoots[degree] = currNode;
+        // printf("updated newRoots\n");
     }
 
     min = nullptr;
@@ -294,15 +328,24 @@ void FibonacciHeap::PrintTree(Node *root, int padding)
 
 bool FibonacciHeap::DecreaseKey(key_t key, uint32_t newPriority)
 {
+#ifdef FIBHEAP_DEBUG
+    printf("decreasing %d\n", key);
+#endif
     Node *keyNode = keyNodeMap[key];
     if ( keyNode == nullptr )
     {
+#ifdef FIBHEAP_DEBUG
+        printf("decreasing new key, inserting\n");
+#endif
         Insert(key, newPriority);
         return true;
     }
 
     if ( newPriority > keyNode->priority )
     {
+#ifdef FIBHEAP_DEBUG
+        printf("already lower, not decreasing\n");
+#endif
         return false;
     }
 
@@ -311,8 +354,14 @@ bool FibonacciHeap::DecreaseKey(key_t key, uint32_t newPriority)
     // keyNode is a root node, no cutting or marking needed, just check if its the new min
     if ( keyNode->parent == nullptr )
     {
+#ifdef FIBHEAP_DEBUG
+        printf("Decreasing a root node, checking if its new min\n");
+#endif
         if ( keyNode->priority < min->priority )
         {
+#ifdef FIBHEAP_DEBUG
+            printf("    New Min found!\n");
+#endif
             min = keyNode;
         }
         return true;
@@ -321,15 +370,30 @@ bool FibonacciHeap::DecreaseKey(key_t key, uint32_t newPriority)
     // heap property is still intact, just no cutting needed, just return
     if ( keyNode->parent->priority < keyNode->priority )
     {
+#ifdef FIBHEAP_DEBUG
+        printf("Decreasing didn't violate heap property\n");
+#endif
         return true;
     }
 
+#ifdef FIBHEAP_DEBUG
+    printf("cutting\n");
+#endif
     Cut(keyNode);
+#ifdef FIBHEAP_DEBUG
+    printf("finished cutting\n");
+#endif
     return true;
 }
 
 void FibonacciHeap::Cut(Node *cutNode)
 {
+    static bool firstcut = true;
+    if ( firstcut )
+    {
+        printf("FIRST CUT\n");
+        firstcut = false;
+    }
     // this will never be the first val, only seen on
     // recursive calls, so no need to check for new minimum
     if ( cutNode->parent == nullptr )
@@ -359,3 +423,34 @@ void FibonacciHeap::Cut(Node *cutNode)
         parent->marked = true;
     }
 }
+
+#ifdef FIBHEAP_DEBUG_VERIFY_CIRCULARITY
+bool FibonacciHeap::VerifyCircularity(Node *root)
+{
+    bool r = true;
+    int i = 0;
+    Node *curr = root;
+    if ( curr == nullptr )
+    {
+        printf("Not circular, null ptr");
+        return false;
+    }
+    while ( curr->next != root )
+    {
+        if ( curr == nullptr )
+        {
+            r = false;
+            break;
+        }
+        i++;
+        if ( i % 10 == 0 )
+        {
+            printf("%d, ", i);
+        }
+        curr = curr->next;
+    }
+    printf("\nTotal length: %d\n", i);
+    return r;
+}
+
+#endif

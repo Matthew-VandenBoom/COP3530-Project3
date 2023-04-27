@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <vector>
 
+//#define FIBHEAP_DEBUG_VERIFY_CIRCULARITY
+// #define FIBHEAP_CRASH_DEBUG
 #define FIBHEAP_DEBUG
 #ifdef FIBHEAP_DEBUG
 #include <iomanip>
@@ -80,4 +82,7 @@ private:
     static void PrintTree(Node *root, int padding);
 
     void Cut(Node *node);
+#ifdef FIBHEAP_DEBUG_VERIFY_CIRCULARITY
+    static bool VerifyCircularity(Node *root);
+#endif
 };

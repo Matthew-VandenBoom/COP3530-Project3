@@ -2,6 +2,8 @@
 
 #include <unordered_set>
 
+#define FILE_READ_BUF_SIZE 1048576
+
 const string DataReader::testFilePath = "../data/testsorted.pldat";
 
 DataReader::DataReader(string file)
@@ -20,6 +22,8 @@ DataReader::DataReader(string file)
         return;
     }
 
+    streambuf = new char[FILE_READ_BUF_SIZE];
+    inStream.rdbuf()->pubsetbuf(streambuf, FILE_READ_BUF_SIZE);
     inStream.read((char *)(&numEntries), sizeof(numEntries));
 
     struct stat64 fileStats;
@@ -39,7 +43,10 @@ DataReader::DataReader(string file)
     }
 
     valid = true;
+    empty = RemainingEntries() == 0;
     numRead = 0;
+
+    entryBufferPTR = ENTRY_BUFFER_SIZE;
 }
 
 DataReader::~DataReader()
@@ -48,15 +55,12 @@ DataReader::~DataReader()
     {
         inStream.close();
     }
+    delete[] streambuf;
 }
 
 bool DataReader::IsEmpty()
 {
-    if ( !valid )
-    {
-        return true;
-    }
-    return RemainingEntries() == 0;
+    return !valid || empty;
 }
 
 bool DataReader::IsValid()
@@ -75,20 +79,29 @@ unsigned int DataReader::RemainingEntries()
 
 Entry DataReader::NextEntry()
 {
-    if ( !valid || IsEmpty() )
+    unsigned int numToRead;
+    if ( empty )
     {
         printf("Returning Blank Entry");
         return Entry();
     }
-    PackedEntry e;
-    inStream.read((char *)(&e), sizeof(e));
-    numRead++;
-    return Entry(&e);
+    if ( entryBufferPTR == ENTRY_BUFFER_SIZE )
+    {
+        // will be Buffer size, unless there are less than buffer size elements remaining,
+        // then it will be all remaining entries
+        numToRead = min((unsigned int)ENTRY_BUFFER_SIZE, numEntries - numRead);
+        entryBufferPTR -= numToRead;
+        inStream.read((char *)(entryBuffer + entryBufferPTR), numToRead * sizeof(PackedEntry));
+    }
+    numRead += 1;
+    empty = numRead == numEntries;
+
+    return Entry(entryBuffer + (entryBufferPTR++));
 }
 
 static const uint32_t testNumEntries = 4;
 static const uint32_t testTimes[] = {0, 1, 2, 3};
-static const uint32_t testUsers[] = {1, 3, 0, 2};
+static const int testUsers[] = {1, 3, 0, 2};
 static const uint8_t testReds[] = {0x11, 0x77, 0xAA, 0x44};
 static const uint8_t testGreens[] = {0x22, 0x88, 0xFF, 0x55};
 static const uint8_t testBlues[] = {0x33, 0x99, 0xBB, 0x66};
@@ -201,14 +214,14 @@ DataInfo DataReader::FileInfo(string file)
     DataReader data(file);
     Entry e;
     std::unordered_set<uint32_t> seenUsers;
-    uint32_t maxUser = 0;
+    int maxUser = 0;
     uint32_t maxTime = 0;
     if ( !data.IsValid() )
     {
         printf("File %s isnt valid\n", file.c_str());
     }
     info.numEntries = data.RemainingEntries();
-
+    printf("Reading %s\n", file.c_str());
     while ( !data.IsEmpty() )
     {
         e = data.NextEntry();
@@ -226,7 +239,7 @@ DataInfo DataReader::FileInfo(string file)
     info.maxUser = maxUser;
     info.allUsers = true;
     printf("Checking for all users\n");
-    for ( uint32_t user = 0; user <= maxUser; user++ )
+    for ( int user = 0; user <= maxUser; user++ )
     {
         if ( seenUsers.find(user) == seenUsers.end() )
         {

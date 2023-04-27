@@ -1,39 +1,41 @@
 #include <SFML/Graphics.hpp>
 
-#include "TextureManager.h"
 #include "Random.h"
+#include "TextureManager.h"
+
 // include graph header file
 
-using namespace sf;
+// using namespace sf;
 
-class WindowUI {
+class WindowUI
+{
 private:
     // images on ui
-    Sprite background_left;
-    Sprite background_right;
-    Sprite title;
-    Sprite intro;
-    Sprite user1;
-    Sprite user1instruct;
-    Sprite user2instruct;
-    Sprite user2;
-    Sprite dice1;
-    Sprite dice2;
-    Sprite run_algorithm;
-    Sprite reset;
-    Sprite visualization_header;
-    Sprite fibonacci_visual;
-    Sprite binary_visual;
-    Sprite fibonacci_header;
-    Sprite binary_header;
-    Sprite output;
-    Sprite output_nopath;
-    Sprite output_path;
+    sf::Sprite background_left;
+    sf::Sprite background_right;
+    sf::Sprite title;
+    sf::Sprite intro;
+    sf::Sprite user1;
+    sf::Sprite user1instruct;
+    sf::Sprite user2instruct;
+    sf::Sprite user2;
+    sf::Sprite dice1;
+    sf::Sprite dice2;
+    sf::Sprite run_algorithm;
+    sf::Sprite reset;
+    sf::Sprite visualization_header;
+    sf::Sprite fibonacci_visual;
+    sf::Sprite binary_visual;
+    sf::Sprite fibonacci_header;
+    sf::Sprite binary_header;
+    sf::Sprite output;
+    sf::Sprite output_nopath;
+    sf::Sprite output_path;
 
     // text objects
-    Font font;
-    Text user1ID;
-    Text user2ID;
+    sf::Font font;
+    sf::Text user1ID;
+    sf::Text user2ID;
 
     // user 1 and user 2 IDs
     int randomUser1;
@@ -42,21 +44,22 @@ private:
     // insert graph object so functions can be called
 
 public:
-    WindowUI() {
+    WindowUI()
+    {
         // load font
-        font.loadFromFile("fonts/pixelmix.ttf");
-        
+        font.loadFromFile("../GUI/fonts/pixelmix.ttf");
+
         // set font characteristics
         user1ID.setFont(font);
         user1ID.setCharacterSize(24);
-        user1ID.setFillColor(Color::Black);
-        user1ID.setStyle(Text::Regular);
+        user1ID.setFillColor(sf::Color::Black);
+        user1ID.setStyle(sf::Text::Regular);
 
         user2ID.setFont(font);
         user2ID.setCharacterSize(24);
-        user2ID.setFillColor(Color::Black);
-        user2ID.setStyle(Text::Regular);
-        
+        user2ID.setFillColor(sf::Color::Black);
+        user2ID.setStyle(sf::Text::Regular);
+
         // set and load textures
         background_left.setTexture(TextureManager::GetTexture("background_left"));
         background_right.setTexture(TextureManager::GetTexture("background_right"));
@@ -102,63 +105,74 @@ public:
         output_path.setPosition(602, 484);
 
         // set path/no path output to not show
-        output_nopath.setColor(Color(255,255,255,0));
-        output_path.setColor(Color(255,255,255,0));
+        output_nopath.setColor(sf::Color(255, 255, 255, 0));
+        output_path.setColor(sf::Color(255, 255, 255, 0));
     }
 
-    int RandomUser(){
+    int RandomUser()
+    {
         // set max with graph function - 100 is temp value
-        int random = Random::Int(0,100);
+        int random = Random::Int(0, 100);
 
         return random;
     }
-    
-    void Update(RenderWindow &window, Cursor &cursor) {
+
+    void Update(sf::RenderWindow &window, sf::Cursor &cursor)
+    {
         // left-click
-        if(Mouse::isButtonPressed(Mouse::Left)) {
-            Vector2i position = Mouse::getPosition(window);
+        if ( sf::Mouse::isButtonPressed(sf::Mouse::Left) )
+        {
+            sf::Vector2i position = sf::Mouse::getPosition(window);
             // if user 1 dice is left clicked...
-            if (position.x >= 734 && position.x <= 774) {
-                if (position.y >= 292 && position.y <= 332) {
+            if ( position.x >= 734 && position.x <= 774 )
+            {
+                if ( position.y >= 292 && position.y <= 332 )
+                {
                     randomUser1 = RandomUser();
-                    String randomUser = to_string(randomUser1);
+                    sf::String randomUser = to_string(randomUser1);
 
                     user1ID.setString(randomUser);
                     user1ID.setPosition(483, 278);
                 }
             }
             // if user 2 dice is left clicked...
-            if (position.x >= 1122 && position.x <= 1162) {
-                if (position.y >= 292 && position.y <= 332) {
+            if ( position.x >= 1122 && position.x <= 1162 )
+            {
+                if ( position.y >= 292 && position.y <= 332 )
+                {
                     randomUser2 = RandomUser();
-                    String randomUser = to_string(randomUser2);
+                    sf::String randomUser = to_string(randomUser2);
 
                     user2ID.setString(randomUser);
                     user2ID.setPosition(871, 278);
                 }
             }
             // if run algorithm is clicked
-            if (position.x >= 602 && position.x <= 801) {
-                if (position.y >= 386 && position.y < 450) {
+            if ( position.x >= 602 && position.x <= 801 )
+            {
+                if ( position.y >= 386 && position.y < 450 )
+                {
                     // call function to create graph
                     // call functions to run algorithms
-                        // return if successful to change output text
-                    
+                    // return if successful to change output text
+
                     // if successful, make output_path visible
                     // if not successful, make output_nopath visible
                 }
             }
             // reset button
-            if (position.x >= 836 && position.x <= 1035) {
-                if (position.y >= 386 && position.y < 450) {
+            if ( position.x >= 836 && position.x <= 1035 )
+            {
+                if ( position.y >= 386 && position.y < 450 )
+                {
                     // resets output
-                    output_nopath.setColor(Color(255,255,255,0));
-                    output_path.setColor(Color(255,255,255,0));
+                    output_nopath.setColor(sf::Color(255, 255, 255, 0));
+                    output_path.setColor(sf::Color(255, 255, 255, 0));
 
                     // clear input field
                     user1ID.setString("");
                     user2ID.setString("");
-                    
+
                     // will need to reset graph visualization - still not figured out
 
                     // call function to reset graph
@@ -168,7 +182,8 @@ public:
         Draw(window);
     }
 
-    void Draw(RenderWindow &window) {
+    void Draw(sf::RenderWindow &window)
+    {
         // draw go
         window.draw(background_left);
         window.draw(background_right);

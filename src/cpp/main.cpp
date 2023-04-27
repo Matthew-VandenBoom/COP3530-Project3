@@ -50,13 +50,13 @@ int fibtest(int argc, char *argv[])
 
 int dijkstrastest()
 {
-    Graph test;
+    Graph test(DATA_PATH);
     for ( int i = 0; i < test.NumNodes(); i++ )
     {
         std::cout << i << ": ";
         for ( auto iter = test.GetAdjacent(i).begin(); iter != test.GetAdjacent(i).end(); iter++ )
         {
-            cout << "(" << (*iter).first << ", " << (*iter).second << "), ";
+            cout << "(" << (*iter).first << ", " << (*iter).second.weight << "), ";
         }
         std::cout << std::endl;
     }
@@ -64,7 +64,7 @@ int dijkstrastest()
     return res->startNode;
 }
 
-int main()
+int realMain()
 {
     sf::RenderWindow renderWindow(sf::VideoMode(1200, 600), "COP3530 Project 3 - r/Place Shortest Path");
 
@@ -87,9 +87,50 @@ int main()
         ui.Update(renderWindow, cursor);
         renderWindow.display();
     }
+    return 0;
 }
 
-int WinMain()
+#include "chrono"
+
+int main()
 {
-    printf("windows\n");
+    // DataReader test(DATA_PATH);
+    auto starttime = std::chrono::system_clock::now();
+
+    // clang-format off
+    std::cout << "startime seconds since epoch: " << std::chrono::duration_cast<std::chrono::seconds>(starttime.time_since_epoch()).count() << '\n';
+    // clang-format on
+
+    Graph test(DATA_PATH, 0, 0, 399, 399);
+    DijkstraRet *vals;
+
+    int testpoints[] = {1000}; // , 4, 32424, 788888, 7, 5674};
+    for ( int j = 0; j < 1; j++ )
+    {
+        printf("Starting at: %d\n", testpoints[j]);
+        printf("Outdegree: %d\n", (int)(test.GetAdjacent(j).size()));
+        for ( auto iter = test.GetAdjacent(j).begin(); iter != test.GetAdjacent(j).end(); iter++ )
+        {
+            printf("(%d, %u), ", (*iter).first, iter->second.weight);
+        }
+        vals = Dijkstra<FibonacciHeap>(test, testpoints[j]);
+        printf("\n\n i | dist | prev\n");
+        for ( int i = 0; i < test.NumNodes(); i++ )
+        {
+            if ( vals->dist.at(i) != 0xFFFFFFFF )
+            {
+                printf(" %d | %u | %d\n", i, vals->dist.at(i), vals->prev.at(i));
+            }
+        }
+        delete vals;
+    }
+
+    auto endtime = std::chrono::system_clock::now();
+    // clang-format off
+    std::cout << "end seconds since epoch: " << std::chrono::duration_cast<std::chrono::seconds>(starttime.time_since_epoch()).count() << '\n';
+    auto diff = endtime - starttime;
+    std::cout << "diff (seconds): " << std::chrono::duration_cast<std::chrono::seconds>(diff).count() << '\n';
+    // clang-format on
+
+    printf("Total Nodes: %d\n", test.NumNodes());
 }
