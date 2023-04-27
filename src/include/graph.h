@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 
 #include <cstdint>
@@ -16,7 +18,7 @@ public:
 
     // returns the out edges + their weights for the passed node
     // the actual output container can change, this was just for testing
-    std::unordered_map<uint32_t, uint32_t> GetAdjacent(uint32_t nodeID);
+    std::unordered_map<int, uint32_t> GetAdjacent(int nodeID);
 
 private:
 };

@@ -1,5 +1,7 @@
 #include "DataReader.h"
 
+#include <unordered_set>
+
 const string DataReader::testFilePath = "../data/testsorted.pldat";
 
 DataReader::DataReader(string file)
@@ -191,4 +193,46 @@ bool DataReader::CheckReadability()
     }
 
     return CheckReadability();
+}
+
+DataInfo DataReader::FileInfo(string file)
+{
+    DataInfo info;
+    DataReader data(file);
+    Entry e;
+    std::unordered_set<uint32_t> seenUsers;
+    uint32_t maxUser = 0;
+    uint32_t maxTime = 0;
+    if ( !data.IsValid() )
+    {
+        printf("File %s isnt valid\n", file.c_str());
+    }
+    info.numEntries = data.RemainingEntries();
+
+    while ( !data.IsEmpty() )
+    {
+        e = data.NextEntry();
+        seenUsers.insert(e.user);
+        if ( e.user > maxUser )
+        {
+            maxUser = e.user;
+        }
+        if ( e.time > maxTime )
+        {
+            maxTime = e.time;
+        }
+    }
+    info.maxTime = maxTime;
+    info.maxUser = maxUser;
+    info.allUsers = true;
+    printf("Checking for all users\n");
+    for ( uint32_t user = 0; user <= maxUser; user++ )
+    {
+        if ( seenUsers.find(user) == seenUsers.end() )
+        {
+            printf("User %u missing\n", user);
+            info.allUsers = false;
+        }
+    }
+    return info;
 }

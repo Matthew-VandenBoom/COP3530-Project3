@@ -11,6 +11,14 @@
 #define READABILITY_FALSE 0
 
 using namespace std;
+
+struct DataInfo
+{
+    unsigned int maxUser;
+    bool allUsers; // all users 0 through maxUser are present
+    unsigned int numEntries;
+    unsigned int maxTime;
+};
 class DataReader
 {
 public:
@@ -20,6 +28,8 @@ public:
     unsigned int RemainingEntries();
     bool IsEmpty();
     bool IsValid();
+
+    static DataInfo FileInfo(string file);
 
 private:
     static bool CheckReadability();
