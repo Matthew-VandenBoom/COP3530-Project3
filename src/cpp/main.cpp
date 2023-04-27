@@ -1,3 +1,8 @@
+#include <SFML/Graphics.hpp>
+
+#include "Textbox.h"
+#include "WindowUI.h"
+
 #include <iostream>
 #include <string>
 
@@ -43,7 +48,7 @@ int fibtest(int argc, char *argv[])
     return 0;
 }
 
-int main()
+int dijkstrastest()
 {
     Graph test;
     for ( int i = 0; i < test.NumNodes(); i++ )
@@ -56,5 +61,35 @@ int main()
         std::cout << std::endl;
     }
     DijkstraRet *res = Dijkstra<FibonacciHeap>(test, 0);
-    return 0;
+    return res->startNode;
+}
+
+int main()
+{
+    sf::RenderWindow renderWindow(sf::VideoMode(1200, 600), "COP3530 Project 3 - r/Place Shortest Path");
+
+    WindowUI ui;
+
+    while ( renderWindow.isOpen() )
+    {
+        sf::Event event;
+        sf::Cursor cursor;
+
+        while ( renderWindow.pollEvent(event) )
+        {
+            if ( event.type == sf::Event::Closed )
+            {
+                renderWindow.close();
+            }
+        }
+
+        renderWindow.clear();
+        ui.Update(renderWindow, cursor);
+        renderWindow.display();
+    }
+}
+
+int WinMain()
+{
+    printf("windows\n");
 }
