@@ -1,24 +1,27 @@
-#pragma once
-
-#include <string>
-
 #include <cstdint>
+#include <map>
+#include <set>
+#include <tuple>
 #include <unordered_map>
+#include <vector>
 
+using namespace std;
 class Graph
 {
 public:
-    // however you want to create the graph, i was thinking a path to the file with the data
-    // that was passed to a DataReader object
     Graph();
     Graph(std::string file);
-
-    // returns the number of nodes in the graph
+    ~Graph();
+    void addEdges(string vertex1, string vertex2);
+    void addNode(string vertex, string coordinate, int weight);
     int NumNodes();
-
-    // returns the out edges + their weights for the passed node
-    // the actual output container can change, this was just for testing
-    std::unordered_map<int, uint32_t> GetAdjacent(int nodeID);
+    unordered_map<uint32_t, uint32_t> GetAdjacent(uint32_t nodeID);
+    int totalNodes;
+    vector<tuple<string, string, int>> nodes;
+    vector<tuple<string, string, int>> edges;
+    set<string> uniqueNodes;
+    // string from Node, string to Node, weight of from->to
+    unordered_map<string, vector<tuple<string, int>>> graph;
 
 private:
 };
