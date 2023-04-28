@@ -132,10 +132,10 @@ Graph::Graph(std::string file, int xMin, int yMin, int xMax, int yMax)
             }
             prevAccesses[I_2D(adjustedX, adjustedY)] = currEntry;
         }
-        if ( (data.RemainingEntries() % 1048576) == 0 )
-        {
-            printf("%u remaining\n", data.RemainingEntries());
-        }
+        // if ( (data.RemainingEntries() % 1048576) == 0 )
+        // {
+        //     //printf("%u remaining\n", data.RemainingEntries());
+        // }
     }
 
     free(prevAccesses);
