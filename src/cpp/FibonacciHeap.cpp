@@ -1,6 +1,8 @@
 #include "FibonacciHeap.h"
 
 #ifdef FIBHEAP_DEBUG
+static int temp = 0;
+
 #define VERIFY_REACHABILITY(loc)                                                      \
     temp = CountTraversal(min);                                                       \
     printf("Total Nodes Reachable " #loc ", totalNodes: %d, %d\n", temp, totalNodes); \
@@ -12,7 +14,6 @@
 #define VERIFY_REACHABILITY(loc)
 #endif
 
-static int temp = 0;
 FibonacciHeap::FibonacciHeap(key_t maxKey)
 {
     min = nullptr;
@@ -201,8 +202,9 @@ void FibonacciHeap::PrintRoots()
 }
 void FibonacciHeap::PrintRootList(Node *root)
 {
-    Node *currNode = root;
 #ifdef FIBHEAP_DEBUG
+    Node *currNode = root;
+
     do
     {
         printf("Key: %u, Priority: %u, Degree: %d\n", currNode->key, currNode->priority, currNode->degree);
@@ -588,6 +590,5 @@ int FibonacciHeap::CountTraversal(Node *root)
 
 int FibonacciHeap::CountVector()
 {
-    int c = 0;
     return 0;
 }

@@ -101,9 +101,9 @@ int main()
     std::cout << "startime seconds since epoch: " << std::chrono::duration_cast<std::chrono::seconds>(starttime.time_since_epoch()).count() << '\n';
     // clang-format on
 
-    Graph test(DATA_PATH, 0, 0, 399, 399);
+    Graph test(DATA_PATH, 0, 0, 99, 99);
+    printf("Total Nodes: %d", test.NumNodes());
     DijkstraRet *vals;
-
     int testpoints[] = {1000}; // , 4, 32424, 788888, 7, 5674};
     for ( int j = 0; j < 1; j++ )
     {
@@ -113,7 +113,7 @@ int main()
         {
             printf("(%d, %u), ", (*iter).first, iter->second.weight);
         }
-        vals = Dijkstra<FibonacciHeap>(test, testpoints[j]);
+        vals = Dijkstra<BinaryHeap>(test, testpoints[j]);
         printf("\n\n i | dist | prev\n");
         for ( int i = 0; i < test.NumNodes(); i++ )
         {
